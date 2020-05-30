@@ -533,16 +533,22 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			 * 3、把解析出来的xml标签封装成BeanDefinition对象
 			 */
 			// Tell the subclass to refresh the internal bean factory.
+			//获取beanFactory Class = DefaultListableBeanFactory
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
-			//beanFactory 设置一些属性（忽略）
+			//beanFactory 设置一些属性
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				//空方法
+				//BeanFactory准备工作完成后进行的后置处理工作；  空方法
+				//	1）、子类通过重写这个方法来在BeanFactory创建并预准备完成以后做进一步的设置
 				postProcessBeanFactory(beanFactory);
+
+				//=========================以上是beanFactory创建的及准备工作===================
+
+
 
 				// Invoke factory processors registered as beans in the context.
 				// 在这个方法中开始扫描被组件标记的类, 把类的信息
@@ -572,7 +578,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
-				//实例化单例对象
+				//实例化剩下的单例对象
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -623,14 +629,17 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		//初始化一些属性的设置，当前类方放为空；子类自定义个性化的属性设置方法
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
+		///校验属性合法等（留给子类进行初始化的时候进行检验）
 		getEnvironment().validateRequiredProperties();
 
 		// Store pre-refresh ApplicationListeners...
 		if (this.earlyApplicationListeners == null) {
+			//保存容器早期刷新的事件
 			this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
 		}
 		else {
@@ -660,7 +669,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//进入GenericApplicationContext
+		//创建了一个this.beanFactory=new DefaultListableBeanFactory();
+		//设置序列化的id
 		refreshBeanFactory();
+		/**
+		 * 返回在GenericApplicationContext创建的beanFactory
+		 */
 		return getBeanFactory();
 	}
 
@@ -672,10 +687,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
 		beanFactory.setBeanClassLoader(getClassLoader());
+		//添加表达式解析器
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
+		//设置忽略的自动装配的接口EnvironmentAware、EmbeddedValueResolverAware、xxx；
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
