@@ -554,9 +554,16 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// 在这个方法中开始扫描被组件标记的类, 把类的信息
 				// 封装成一个GenericBeanDefinition存储在map集合中
 				// 完成扫面  但是bean对象还未实例化
+
+				/**
+				 *  执行BeanFactoryPostProcessor的方法；
+				 * 	BeanFactoryPostProcessor：BeanFactory的后置处理器。在BeanFactory标准初始化之后执行的；
+				 * 	两个接口：BeanFactoryPostProcessor、BeanDefinitionRegistryPostProcessor
+				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				//注册BeanPostProcessor（Bean的后置处理器）
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
